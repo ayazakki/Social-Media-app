@@ -59,6 +59,7 @@ export default function CreatePostForm() {
           <Typography>write a post</Typography>
         </Stack>
         <TextField
+        placeholder="Write something here..."
           name="body"
           id="body-input"
           onChange={formik.handleChange}

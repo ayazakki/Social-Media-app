@@ -12,12 +12,17 @@ import { red } from '@mui/material/colors';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
-import { Box } from '@mui/material';
+import { Box, Button, Stack, TextField } from '@mui/material';
 import Image from 'next/image';
 import Link from 'next/link';
 import CommentIcon from '@mui/icons-material/Comment';
 import Comment from '../Comment/Comment';
-
+import AddCircleIcon from '@mui/icons-material/AddCircle';
+import { headers } from 'next/headers';
+import { getCookie } from 'cookies-next/client';
+import axios from 'axios';
+import { useFormik } from 'formik';
+import toast from 'react-hot-toast';
 interface Props{
   post:PostI;
   showComment?:boolean;
@@ -52,19 +57,43 @@ const ExpandMore = styled((props: ExpandMoreProps) => {
 }));
 
 export default function Post({post,showComment}:Props) {
-  const [expanded, setExpanded] = React.useState(false);
+  const [commentsExpanded, setCommentsExpanded] = React.useState(false);
+  const [addCommentOpen, setAddCommentOpen] = React.useState(false);
 
-  const handleExpandClick = () => {
-    setExpanded(!expanded);
-  };
-
+  const handleExpandCommentsClick = () => {
+  setCommentsExpanded(!commentsExpanded);
+};
+  const handleAddCommentClick = () => {
+  setAddCommentOpen(!addCommentOpen);
+};
+  async function addComment(values: { content: string; post: string }){
+    await axios.post("https://linked-posts.routemisr.com/comments",values,{
+      headers:{
+        token:getCookie("token")
+      }
+    }).then(({data})=>{
+      // console.log(data);
+      toast.success("comment added successfully")
+      formik.resetForm();
+    }).catch((error)=>{
+      console.log(error);
+      
+    })
+  }
+  const formik=useFormik({
+    initialValues:{
+      content:"",
+      post:post._id
+    },
+    onSubmit:addComment,
+  })
   return (
     <Card>
       <CardHeader
         avatar={<Avatar sx={{ bgcolor: red[500] }} aria-label="recipe" src={post.user.photo}/>}
         action={
           <IconButton aria-label="settings">
-            <MoreVertIcon />
+            <MoreVertIcon/>
           </IconButton>
         }
         title={post.user.name}
@@ -74,8 +103,8 @@ export default function Post({post,showComment}:Props) {
         <Typography variant="body2" sx={{ color: 'text.secondary' }}>
           {post.body}
         </Typography>
-        {post.image?<Box sx={{position:"relative",height:{md:"500px",xs:"300px"}}}>
-          <Image src={post.image} alt={post.body} fill/>
+        {post.image ||post.user.photo?<Box sx={{position:"relative",height:{md:"500px",xs:"300px"}}}>
+          <Image src={post.image||post.user.photo} alt={post.body} fill/>
         </Box>:""}
       </CardContent>
       <CardActions disableSpacing>
@@ -85,21 +114,39 @@ export default function Post({post,showComment}:Props) {
         <IconButton aria-label="share">
           <Link href={`post/${post._id}`}><CommentIcon sx={{marginTop:1,color:"gray"}}/></Link>
         </IconButton>
+        <Stack direction={"row"} sx={{marginLeft:"auto"}}>
         <ExpandMore
-          expand={expanded}
-          onClick={handleExpandClick}
-          aria-expanded={expanded}
-          aria-label="show more"
+  expand={addCommentOpen}
+  onClick={handleAddCommentClick}
+  aria-expanded={addCommentOpen}
+  aria-label="add comment"
+>
+  <AddCircleIcon />
+        </ExpandMore>
+        <ExpandMore
+          expand={commentsExpanded}
+          onClick={handleExpandCommentsClick}
+          aria-expanded={commentsExpanded}
+          aria-label="show comments"
         >
           <ExpandMoreIcon />
         </ExpandMore>
+        </Stack>
+        
       </CardActions>
-      <Collapse in={expanded} timeout="auto" unmountOnExit>
-      {showComment?
-        post.comments.map((comment)=>{
-          return <Comment comment={comment} key={comment._id}/>
-        })
-        :""}
+      {addCommentOpen && (
+        <Box sx={{ p: 2 }}>
+          <form onSubmit={formik.handleSubmit}>
+            <TextField  value={formik.values.content} sx={{width:"70%",marginRight:3}} onChange={formik.handleChange} name="content" type="text" placeholder="Write a comment..." />
+          <Button type='submit' variant="contained" sx={{width:"25%",padding:"15px"}}>Add</Button>
+          </form>
+        </Box>
+      )}
+      <Collapse in={commentsExpanded} timeout="auto" unmountOnExit>
+        {showComment &&
+          post.comments.slice(0, 15).map((comment) => (
+            <Comment comment={comment} key={comment._id} />
+          ))}
       </Collapse>
     </Card>
   );

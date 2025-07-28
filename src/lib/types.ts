@@ -19,7 +19,7 @@ declare interface PostI {
 declare interface CommentI {
   _id:string;
   content:string;
-  commentCreator:string;
+  commentCreator:UserI;
   post:string;
   createdAt:string;
 }

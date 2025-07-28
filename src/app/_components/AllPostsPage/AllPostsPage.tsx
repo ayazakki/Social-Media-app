@@ -7,8 +7,12 @@ import { useDispatch, useSelector } from 'react-redux'
 import Post from '../Post/Post'
 import CreatePostForm from '../CreatePostForm/CreatePostForm'
 import UpdatePhoto from '../UpdatePhoto/UpdatePhoto'
+import { getCookie } from 'cookies-next/client'
+import { useRouter } from 'next/navigation'
+import AddCircleIcon from '@mui/icons-material/AddCircle';
 
 export default function AllPostsPage() {
+  const router=useRouter()
   const dispatch=useDispatch<typeof store.dispatch>()
   const {posts,isLoading} = useSelector((store:{postReducer:PostSlice})=>store.postReducer)
   useEffect(()=>{
@@ -21,6 +25,10 @@ export default function AllPostsPage() {
       <CircularProgress size="3rem" />
     </Box>
     )
+  }
+  if(getCookie("token")== undefined){
+    router.push("login")
+    return true
   }
 
   return(

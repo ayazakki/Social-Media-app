@@ -16,12 +16,19 @@ import AdbIcon from "@mui/icons-material/Adb";
 import Link from "next/link";
 import { useDispatch, useSelector } from "react-redux";
 import { store } from "@/lib/Redux/store";
-import { getUserData } from "@/lib/Redux/slices/userSlice";
+import { clearUser, getUserData } from "@/lib/Redux/slices/userSlice";
+import { deleteCookie } from "cookies-next/client";
+import { useRouter } from "next/navigation";
+import Diversity1Icon from '@mui/icons-material/Diversity1';
 
 const pages = [
   {
     text: "Profile",
     link: "profile",
+  },
+  {
+    text: "TimeLine",
+    link: "/",
   },
 ];
 const settings = [
@@ -36,6 +43,13 @@ const settings = [
 ];
 
 function Navbar() {
+  const router = useRouter()
+  function handleLogout(){
+    deleteCookie("token")
+    dispatch(clearUser())
+    router.push("/login")
+
+  }
   const { user } = useSelector(
     (store: { userReducer: UserSlice }) => store.userReducer
   );
@@ -70,7 +84,7 @@ function Navbar() {
     <AppBar position="static">
       <Container maxWidth="xl">
         <Toolbar disableGutters>
-          <AdbIcon sx={{ display: { xs: "none", md: "flex" }, mr: 1 }} />
+          <Diversity1Icon sx={{ display: { xs: "none", md: "flex" }, mr: 1 }}/>
           <Typography
             variant="h6"
             noWrap
@@ -86,7 +100,7 @@ function Navbar() {
               textDecoration: "none",
             }}
           >
-            LOGO
+            Social
           </Typography>
 
           <Box sx={{ flexGrow: 1, display: { xs: "flex", md: "none" } }}>
@@ -116,20 +130,22 @@ function Navbar() {
               onClose={handleCloseNavMenu}
               sx={{ display: { xs: "block", md: "none" } }}
             >
+              {user?<>
               {pages.map((page) => (
                 <MenuItem key={page.link} onClick={handleCloseNavMenu}>
                   <Typography
                     component={Link}
                     href={`/${page.link}`}
-                    sx={{ textAlign: "center" }}
+                    sx={{ textAlign: "center" ,textDecoration:"none",color:"#1976d2"}}
                   >
                     {page.text}
                   </Typography>
                 </MenuItem>
-              ))}
+              ))}</>:""}
             </Menu>
           </Box>
-          <AdbIcon sx={{ display: { xs: "flex", md: "none" }, mr: 1 }} />
+          <Diversity1Icon sx={{ display: { xs: "flex", md: "none" }, mr: 1 }}/>
+
           <Typography
             variant="h5"
             noWrap
@@ -146,9 +162,9 @@ function Navbar() {
               textDecoration: "none",
             }}
           >
-            LOGO
+            Social
           </Typography>
-          <Box sx={{ flexGrow: 1, display: { xs: "none", md: "flex" } }}>
+          {user?<Box sx={{ flexGrow: 1, display: { xs: "none", md: "flex" } }}>
             {pages.map((page) => (
               <Button
                 key={page.link}
@@ -158,21 +174,21 @@ function Navbar() {
                 <Typography
                   component={Link}
                   href={`/${page.link}`}
-                  sx={{ textAlign: "center" }}
+                  sx={{ textAlign: "center" ,textDecoration:"none", color:"white"}}
                 >
                   {page.text}
                 </Typography>
               </Button>
             ))}
-          </Box>
-          <Box sx={{ flexGrow: 0 }}>
+          </Box>:""}
+          <Box sx={{ flexGrow: 0 ,marginLeft:"auto"}}>
             <Tooltip title="Open settings">
               <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
                 <Avatar alt="Remy Sharp" src={user?.photo} />
               </IconButton>
             </Tooltip>
             <Menu
-              sx={{ mt: "45px" }}
+              sx={{ mt: "45px"}}
               id="menu-appbar"
               anchorEl={anchorElUser}
               anchorOrigin={{
@@ -203,8 +219,11 @@ function Navbar() {
                 </MenuItem>
               ))}
               {user ? (
-                <MenuItem key={"logout"} onClick={handleCloseNavMenu}>
-                  <Typography component={"button"} sx={{ textAlign: "center" }}>
+                <MenuItem key={"logout"} onClick={()=>{
+                  handleCloseNavMenu()
+                  handleLogout()
+                }}>
+                  <Typography component={"button"} sx={{ textAlign: "center" ,bgcolor:"red",color:"white",paddingInline:"3px",borderColor:"white"}}>
                     Logout
                   </Typography>
                 </MenuItem>
