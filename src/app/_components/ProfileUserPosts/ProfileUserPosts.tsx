@@ -1,5 +1,6 @@
 "use client"
 import axios from 'axios'
+import SentimentVeryDissatisfiedIcon from '@mui/icons-material/SentimentVeryDissatisfied';
 import { getCookie } from 'cookies-next/client'
 import { styled } from '@mui/material/styles';
 import React, { useEffect, useState } from 'react'
@@ -149,7 +150,9 @@ export default function ProfileUserPosts() {
     </Card>
   ))
 ) : (
-  <Typography>No posts</Typography>
+  <Box sx={{display:"flex",justifyContent:"center",alignItems:"center",height:"100vh"}}>
+    <Typography sx={{color:"#1976d2"}}>No posts <SentimentVeryDissatisfiedIcon sx={{paddingTop:"8px"}}/></Typography>
+  </Box>
 )}
   </>
 }
